@@ -1,0 +1,41 @@
+flowchart LR
+  client[Client / Frontend] -->|HTTP| checkout[Checkout API
+  Node.js]
+
+  checkout -->|publish event| kafka[(Kafka)]
+  kafka -->|CheckoutRequested| orch[Saga Orchestrator
+  C#]
+
+  orch -->|FraudCheckRequested cmd| kafka
+  kafka -->|FraudCheckRequested| fraud[Fraud Service
+  Python + Neo4j]
+  fraud -->|FraudCheckPassed/Failed event| kafka
+  kafka -->|FraudCheckPassed/Failed| orch
+
+  orch -->|InventoryReserveRequested cmd| kafka
+  kafka -->|InventoryReserveRequested| inv[Inventory Service
+  Go]
+  inv -->|InventoryReserved/Failed event| kafka
+  kafka -->|InventoryReserved/Failed| orch
+
+  orch -->|PaymentAuthorizeRequested cmd| kafka
+  kafka -->|PaymentAuthorizeRequested| pay[Payment Service
+  Go]
+  pay -->|PaymentAuthorized/Failed/Voided event| kafka
+  pay -->|FinancialEventRecorded event| kafka
+  kafka -->|Payment*| orch
+
+  kafka -->|FinancialEventRecorded| ledger[Ledger Writer Cassandra consumer]
+  ledger --> cass[(Cassandra)]
+
+  checkout --> mongo[(MongoDB)]
+  orch --> mongo
+  inv --> mongo
+  pay --> mongo
+  fraud --> neo[(Neo4j)]
+
+  checkout -->|GET /orders/orderId| client
+  statement[Statement API
+  Reads Cassandra] --> cass
+  client -->|HTTP| statement
+     

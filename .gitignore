@@ -1,0 +1,19 @@
+# Dependencies
+node_modules/
+
+# Build artifacts
+dist/
+
+# Env (secrets) - ignore tudo, mas mantenha um template versionado
+.env
+.env.*
+!.env.example
+
+# OS / Editor junk
+.DS_Store
+
+# Tests / Coverage
+coverage/
+
+# Logs
+*.log
